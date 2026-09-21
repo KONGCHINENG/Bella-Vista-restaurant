@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Book a table — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div class="card card--narrow">
+				<div class="card__head">
+					<h1>Book a table</h1>
+					<p>Pick a date, time, and party size — we'll confirm instantly.</p>
+				</div>
+
+				<form id="bookingForm" novalidate>
+					<div class="field">
+						<label for="tableId">Table</label>
+						<select id="tableId" required>
+							<option value="" disabled selected>Loading tables…</option>
+						</select>
+					</div>
+
+					<div class="field">
+						<label for="date">Date</label>
+						<input type="date" id="date" required>
+					</div>
+
+					<div class="field-row">
+						<div class="field">
+							<label for="startTime">Arrival time</label>
+							<input type="time" id="startTime" value="19:00" required>
+						</div>
+						<div class="field">
+							<label for="endTime">Until</label>
+							<input type="time" id="endTime" value="21:00" required>
+						</div>
+					</div>
+
+					<p class="form-error" id="formError" role="alert"></p>
+
+					<button type="submit" class="btn btn--full" id="submitBtn">Confirm booking</button>
+				</form>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderNav('book.html');
+	requireAuth(); // sends logged-out visitors to login.html before they see the form
+
+	// Default the date picker to today, so people aren't stuck guessing the format
+	const dateInput = document.getElementById('date');
+	dateInput.min = new Date().toISOString().split('T')[0];
+	dateInput.value = dateInput.min;
+
+	// Arriving from the availability page pre-fills the date and time the
+	// visitor already picked there, instead of starting over.
+	const params = new URLSearchParams(window.location.search);
+	if (params.has('date') && params.get('date') >= dateInput.min) dateInput.value = params.get('date');
+	if (params.has('startTime')) document.getElementById('startTime').value = params.get('startTime');
+	if (params.has('endTime')) document.getElementById('endTime').value = params.get('endTime');
+
+	// Table options are fetched rather than hardcoded — a table's id doesn't
+	// necessarily match its tableNumber, so baking ids into the markup can
+	// silently point a booking at the wrong table.
+	const tableSelect = document.getElementById('tableId');
+	const dateField = document.getElementById('date');
+	const startTimeField = document.getElementById('startTime');
+	const endTimeField = document.getElementById('endTime');
+	let allTables = [];
+
+	function renderTableOptions(availabilityById){
+		const preselect = params.get('tableId');
+		const previousValue = tableSelect.value;
+		const keepSelected = previousValue || preselect;
+
+		tableSelect.innerHTML = `<option value="" disabled${keepSelected ? '' : ' selected'}>Choose a table</option>` +
+			allTables.map(t => {
+				const location = (TABLE_INFO[t.tableNumber] && TABLE_INFO[t.tableNumber].location) || '';
+				const selected = keepSelected && Number(keepSelected) === t.id ? ' selected' : '';
+				const booked = availabilityById && availabilityById.get(t.id) === false;
+				const label = `Table ${t.tableNumber} — ${location}, seats ${t.seats}${booked ? ' (Booked for this time)' : ''}`;
+				return `<option value="${t.id}"${selected}>${label}</option>`;
+			}).join('');
+	}
+
+	// Re-checks which tables are actually free for the currently selected
+	// date/time — without this, the dropdown just lists every table with no
+	// indication that one might already be booked for that slot, and the
+	// customer only finds out at submit (via the 409 conflict check).
+	async function refreshAvailability(){
+		const date = dateField.value;
+		const startTime = startTimeField.value;
+		const endTime = endTimeField.value;
+		if (!date || !startTime || !endTime || startTime >= endTime) return;
+
+		try{
+			const startISO = `${date}T${startTime}:00`;
+			const endISO = `${date}T${endTime}:00`;
+			const results = await api(`/api/availability?date=${encodeURIComponent(date)}&startTime=${encodeURIComponent(startISO)}&endTime=${encodeURIComponent(endISO)}`);
+			const availabilityById = new Map(results.map(r => [r.id, r.available]));
+			renderTableOptions(availabilityById);
+		}catch{
+			// Booking still works via the submit-time conflict check even if
+			// this background availability lookup fails — fail silently.
+		}
+	}
+
+	async function loadTables(){
+		try{
+			allTables = await api('/api/tables');
+			renderTableOptions();
+			refreshAvailability();
+		}catch(err){
+			tableSelect.innerHTML = '<option value="" disabled selected>Couldn\'t load tables</option>';
+			toast(err.message, 'error');
+		}
+	}
+	loadTables();
+
+	dateField.addEventListener('change', refreshAvailability);
+	startTimeField.addEventListener('change', refreshAvailability);
+	endTimeField.addEventListener('change', refreshAvailability);
+
+	const form = document.getElementById('bookingForm');
+	const errorEl = document.getElementById('formError');
+	const submitBtn = document.getElementById('submitBtn');
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		errorEl.textContent = '';
+
+		const date = document.getElementById('date').value;
+		const startTime = document.getElementById('startTime').value;
+		const endTime = document.getElementById('endTime').value;
+
+		if (startTime >= endTime){
+			errorEl.textContent = 'End time must be after the arrival time.';
+			return;
+		}
+
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Checking availability…';
+
+		try{
+			await api('/api/reservations', {
+				method: 'POST',
+				body: {
+					tableId: Number(document.getElementById('tableId').value),
+					date,
+					startTime: `${date}T${startTime}:00`,
+					endTime: `${date}T${endTime}:00`
+				}
+			});
+
+			toast('Table booked — see you then.', 'success');
+			window.location.href = 'my-bookings.html';
+		}catch(err){
+			// A 409 conflict from the server reads clearly here without
+			// needing to inspect the status code separately.
+			errorEl.textContent = err.message;
+			toast(err.message, 'error');
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Confirm booking';
+		}
+	});
+</script>
+</body>
+</html>

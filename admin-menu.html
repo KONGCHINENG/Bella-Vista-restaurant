@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu — Admin — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);">Menu</h1>
+				<p class="muted">Add, edit, or remove dishes — changes appear on the live menu immediately.</p>
+			</div>
+
+			<form id="menuForm" class="card" style="margin-bottom:var(--space-l);" novalidate>
+				<input type="hidden" id="itemId" value="">
+				<div class="field-row">
+					<div class="field">
+						<label for="category">Category</label>
+						<select id="category" required>
+							<option value="starter">Starter</option>
+							<option value="main">Main</option>
+							<option value="dessert">Dessert</option>
+						</select>
+					</div>
+					<div class="field">
+						<label for="price">Price ($)</label>
+						<input type="number" id="price" min="1" step="1" required>
+					</div>
+				</div>
+				<div class="field">
+					<label for="name">Name</label>
+					<input type="text" id="name" required>
+				</div>
+				<div class="field">
+					<label for="description">Description</label>
+					<textarea id="description" rows="2" required></textarea>
+				</div>
+				<div class="field">
+					<label for="photo">Photo filename (optional)</label>
+					<input type="text" id="photo" placeholder="e.g. burrata-e-prosciutto.jpg">
+					<p class="muted" style="font-size:0.8rem;">Just the filename — the photo should be placed in the <code>image</code> folder.</p>
+				</div>
+
+				<p class="form-error" id="formError" role="alert"></p>
+
+				<div style="display:flex; gap:0.6em; flex-wrap:wrap;">
+					<button type="submit" class="btn" id="submitBtn">Add dish</button>
+					<button type="button" class="btn btn--outline-dark" id="cancelEditBtn" style="display:none;">Cancel edit</button>
+				</div>
+			</form>
+
+			<div id="listRegion" class="res-list">
+				<div class="res-card"><div class="skeleton" style="width:60%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:50%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:70%;"></div></div>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderAdminNav('admin-menu.html');
+	requireAuth({ role: 'admin' });
+
+	const CATEGORY_LABELS = { starter: 'Starter', main: 'Main', dessert: 'Dessert' };
+
+	const form = document.getElementById('menuForm');
+	const itemIdInput = document.getElementById('itemId');
+	const categoryInput = document.getElementById('category');
+	const nameInput = document.getElementById('name');
+	const descriptionInput = document.getElementById('description');
+	const priceInput = document.getElementById('price');
+	const photoInput = document.getElementById('photo');
+	const errorEl = document.getElementById('formError');
+	const submitBtn = document.getElementById('submitBtn');
+	const cancelEditBtn = document.getElementById('cancelEditBtn');
+	const listRegion = document.getElementById('listRegion');
+
+	function resetForm(){
+		form.reset();
+		itemIdInput.value = '';
+		submitBtn.textContent = 'Add dish';
+		cancelEditBtn.style.display = 'none';
+		errorEl.textContent = '';
+	}
+
+	function startEdit(item){
+		itemIdInput.value = item.id;
+		categoryInput.value = item.category;
+		nameInput.value = item.name;
+		descriptionInput.value = item.description;
+		priceInput.value = item.price;
+		photoInput.value = item.photo || '';
+		submitBtn.textContent = 'Save changes';
+		cancelEditBtn.style.display = 'inline-flex';
+		errorEl.textContent = '';
+		form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+	}
+
+	cancelEditBtn.addEventListener('click', resetForm);
+
+	async function loadMenu(){
+		try{
+			const items = await api('/api/menu');
+
+			if (items.length === 0){
+				listRegion.innerHTML = `
+					<div class="empty-state card">
+						<h3>No dishes yet</h3>
+						<p class="muted">Add your first dish using the form above.</p>
+					</div>`;
+				return;
+			}
+
+			listRegion.innerHTML = items.map(item => `
+				<div class="res-card" data-id="${item.id}">
+					<div class="res-card__info">
+						<h3>${escapeHtml(item.name)} · $${item.price}</h3>
+						<p>${CATEGORY_LABELS[item.category] || item.category} · ${escapeHtml(item.description)}</p>
+					</div>
+					<div class="res-card__actions">
+						<button class="btn btn--small" data-action="edit" data-id="${item.id}">Edit</button>
+						<button class="btn btn--small btn--danger" data-action="delete" data-id="${item.id}">Delete</button>
+					</div>
+				</div>
+			`).join('');
+
+			const itemsById = new Map(items.map(i => [String(i.id), i]));
+			listRegion.querySelectorAll('button[data-action="edit"]').forEach(btn => {
+				btn.addEventListener('click', () => startEdit(itemsById.get(btn.dataset.id)));
+			});
+			listRegion.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+				btn.addEventListener('click', () => deleteItem(btn.dataset.id, itemsById.get(btn.dataset.id), btn));
+			});
+		}catch(err){
+			listRegion.innerHTML = `<p class="form-error">${escapeHtml(err.message)}</p>`;
+			toast(err.message, 'error');
+		}
+	}
+
+	async function deleteItem(id, item, btn){
+		const name = item ? item.name : 'this dish';
+		if (!confirm(`Remove "${name}" from the menu? This can't be undone.`)) return;
+
+		btn.disabled = true;
+		try{
+			await api(`/api/admin/menu/${id}`, { method: 'DELETE' });
+			toast(`"${name}" removed from the menu.`, 'success');
+			if (itemIdInput.value === String(id)) resetForm();
+			loadMenu();
+		}catch(err){
+			btn.disabled = false;
+			toast(err.message, 'error');
+		}
+	}
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		errorEl.textContent = '';
+
+		const body = {
+			category: categoryInput.value,
+			name: nameInput.value.trim(),
+			description: descriptionInput.value.trim(),
+			price: Number(priceInput.value),
+			photo: photoInput.value.trim() || null
+		};
+
+		submitBtn.disabled = true;
+		const editingId = itemIdInput.value;
+
+		try{
+			if (editingId){
+				await api(`/api/admin/menu/${editingId}`, { method: 'PUT', body });
+				toast('Dish updated.', 'success');
+			}else{
+				await api('/api/admin/menu', { method: 'POST', body });
+				toast('Dish added to the menu.', 'success');
+			}
+			resetForm();
+			loadMenu();
+		}catch(err){
+			errorEl.textContent = err.message;
+			toast(err.message, 'error');
+		}finally{
+			submitBtn.disabled = false;
+		}
+	});
+
+	loadMenu();
+</script>
+</body>
+</html>

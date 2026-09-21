@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<!-- Shared placeholder glyph for dish photos that haven't been added yet — referenced by <use> below so it's defined once. -->
+	<svg width="0" height="0" style="position:absolute;">
+		<symbol id="icon-utensils" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M6 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3" />
+			<path d="M8 12v9" />
+			<path d="M17 3c-1.7 0-3 2-3 5s1.3 5 3 5" />
+			<path d="M17 3v18" />
+		</symbol>
+	</svg>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main>
+		<!-- ===================== MENU HERO ===================== -->
+		<section class="menu-hero">
+			<div class="wrap">
+				<p class="menu-hero__eyebrow">Antipasti &middot; Piatti Principali &middot; Dolci</p>
+				<h1>The menu</h1>
+				<p>Everything below is made in-house, most of it that same morning — pasta rolled by
+				hand, bread that never sees a freezer, and a sauce that simmers for most of the day.</p>
+			</div>
+		</section>
+
+		<nav class="menu-subnav" aria-label="Jump to menu category">
+			<a href="#starters">Starters</a>
+			<a href="#mains">Mains</a>
+			<a href="#desserts">Desserts</a>
+		</nav>
+
+		<!-- ===================== STARTERS ===================== -->
+		<section id="starters" class="menu-category">
+			<div class="wrap">
+				<div class="menu-category__head">
+					<p class="eyebrow">Antipasti</p>
+					<h2>Starters</h2>
+					<p class="muted">Small plates built to share while you decide on the rest.</p>
+				</div>
+				<div class="dish-grid" id="starterGrid"><div class="skeleton" style="height:200px;"></div></div>
+			</div>
+		</section>
+
+		<!-- ===================== MAINS ===================== -->
+		<section id="mains" class="menu-category">
+			<div class="wrap">
+				<div class="menu-category__head">
+					<p class="eyebrow">Piatti Principali</p>
+					<h2>Mains</h2>
+					<p class="muted">Slow food, made the way it's always been made here.</p>
+				</div>
+				<div class="dish-grid" id="mainGrid"><div class="skeleton" style="height:200px;"></div></div>
+			</div>
+		</section>
+
+		<!-- ===================== DESSERTS ===================== -->
+		<section id="desserts" class="menu-category">
+			<div class="wrap">
+				<div class="menu-category__head">
+					<p class="eyebrow">Dolci</p>
+					<h2>Desserts</h2>
+					<p class="muted">Made fresh daily &mdash; no exceptions, no shortcuts.</p>
+				</div>
+				<div class="dish-grid" id="dessertGrid"><div class="skeleton" style="height:200px;"></div></div>
+			</div>
+		</section>
+
+		<!-- ===================== CTA ===================== -->
+		<section class="section section--soft">
+			<div class="wrap" style="text-align:center;">
+				<h2 style="font-size:var(--step-3); margin-bottom:var(--space-s);">Ready to taste it?</h2>
+				<p class="muted" style="margin-bottom:var(--space-m);">Booking takes under a minute, and you'll get an
+				instant confirmation &mdash; no calling, no waiting on hold.</p>
+				<a href="signup.html" class="btn">Reserve a table</a>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<p>&copy; Bella Vista Trattoria &middot; 4 Fig Lane &middot; Open Tue&ndash;Sun, 5pm&ndash;11pm</p>
+	</footer>
+
+<script src="app.js"></script>
+<script>
+	renderNav('menu.html');
+
+	function dishCardHtml(item){
+		const photo = item.photo ? `image/${encodeURIComponent(item.photo)}` : '';
+		return `
+			<div class="dish-card">
+				<div class="dish-card__photo">
+					<svg><use href="#icon-utensils" /></svg>
+					${photo ? `<img src="${photo}" alt="${escapeHtml(item.name)}" loading="lazy" onerror="this.style.display='none'">` : ''}
+				</div>
+				<div class="dish-card__row"><span>${escapeHtml(item.name)}</span><span>$${item.price}</span></div>
+				<p>${escapeHtml(item.description)}</p>
+			</div>
+		`;
+	}
+
+	async function loadMenu(){
+		const grids = {
+			starter: document.getElementById('starterGrid'),
+			main: document.getElementById('mainGrid'),
+			dessert: document.getElementById('dessertGrid')
+		};
+		try{
+			const items = await api('/api/menu');
+			const byCategory = { starter: [], main: [], dessert: [] };
+			items.forEach(item => { if (byCategory[item.category]) byCategory[item.category].push(item); });
+
+			Object.keys(grids).forEach(category => {
+				const list = byCategory[category];
+				grids[category].innerHTML = list.length
+					? list.map(dishCardHtml).join('')
+					: `<p class="muted">Nothing in this category yet.</p>`;
+			});
+		}catch(err){
+			Object.values(grids).forEach(grid => {
+				grid.innerHTML = `<p class="form-error">${escapeHtml(err.message)}</p>`;
+			});
+			toast(err.message, 'error');
+		}
+	}
+
+	loadMenu();
+</script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Table availability — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<!-- Shared placeholder glyph for table photos that haven't been added yet — referenced by <use> below so it's defined once. -->
+	<svg width="0" height="0" style="position:absolute;">
+		<symbol id="icon-utensils" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M6 3v7a2 2 0 0 0 2 2h0a2 2 0 0 0 2-2V3" />
+			<path d="M8 12v9" />
+			<path d="M17 3c-1.7 0-3 2-3 5s1.3 5 3 5" />
+			<path d="M17 3v18" />
+		</symbol>
+	</svg>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);">Table availability</h1>
+				<p class="muted">Pick a date and time to see which tables are free right now — no account needed to look.</p>
+			</div>
+
+			<div class="card">
+				<form id="availabilityForm" class="availability-form" novalidate>
+					<div class="field">
+						<label for="date">Date</label>
+						<input type="date" id="date" required>
+					</div>
+					<div class="field">
+						<label for="startTime">Arrival time</label>
+						<input type="time" id="startTime" value="19:00" required>
+					</div>
+					<div class="field">
+						<label for="endTime">Until</label>
+						<input type="time" id="endTime" value="21:00" required>
+					</div>
+					<button type="submit" class="btn" id="checkBtn">Check availability</button>
+				</form>
+				<p class="form-error" id="formError" role="alert"></p>
+			</div>
+
+			<div id="resultsRegion" class="table-grid" aria-live="polite"></div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderNav('availability.html');
+
+	const dateInput = document.getElementById('date');
+	dateInput.min = new Date().toISOString().split('T')[0];
+	dateInput.value = dateInput.min;
+
+	const form = document.getElementById('availabilityForm');
+	const errorEl = document.getElementById('formError');
+	const checkBtn = document.getElementById('checkBtn');
+	const resultsRegion = document.getElementById('resultsRegion');
+
+	function tableLabel(tableNumber){
+		const info = TABLE_INFO[tableNumber];
+		return info ? info.location : 'Table';
+	}
+
+	async function checkAvailability(){
+		errorEl.textContent = '';
+		const date = document.getElementById('date').value;
+		const startTime = document.getElementById('startTime').value;
+		const endTime = document.getElementById('endTime').value;
+
+		if (!date || !startTime || !endTime){ return; }
+		if (startTime >= endTime){
+			errorEl.textContent = 'End time must be after the arrival time.';
+			resultsRegion.innerHTML = '';
+			return;
+		}
+
+		checkBtn.disabled = true;
+		checkBtn.textContent = 'Checking…';
+		resultsRegion.innerHTML = `
+			<div class="table-card"><div class="skeleton" style="width:60%;"></div></div>
+			<div class="table-card"><div class="skeleton" style="width:50%;"></div></div>
+			<div class="table-card"><div class="skeleton" style="width:70%;"></div></div>
+		`;
+
+		const startISO = `${date}T${startTime}:00`;
+		const endISO = `${date}T${endTime}:00`;
+
+		try{
+			const tables = await api(`/api/availability?date=${encodeURIComponent(date)}&startTime=${encodeURIComponent(startISO)}&endTime=${encodeURIComponent(endISO)}`);
+
+			resultsRegion.innerHTML = tables.map(t => {
+				const photo = TABLE_INFO[t.tableNumber] && TABLE_INFO[t.tableNumber].photo;
+				const photoSrc = photo ? `image/${encodeURIComponent(photo)}` : '';
+				return `
+				<div class="table-card${t.available ? '' : ' table-card--unavailable'}">
+					<div class="table-card__photo">
+						<svg><use href="#icon-utensils" /></svg>
+						<img src="${photoSrc}" alt="Table ${t.tableNumber}" loading="lazy" onerror="this.style.display='none'">
+					</div>
+					<div class="table-card__head">
+						<h3>Table ${t.tableNumber}</h3>
+						<span class="status-badge status-badge--${t.available ? 'confirmed' : 'cancelled'}">${t.available ? 'Available' : 'Booked'}</span>
+					</div>
+					<p class="table-card__meta">${tableLabel(t.tableNumber)} &middot; seats ${t.seats}</p>
+					${t.available
+						? `<a class="btn btn--small" href="book.html?tableId=${t.id}&date=${encodeURIComponent(date)}&startTime=${encodeURIComponent(startTime)}&endTime=${encodeURIComponent(endTime)}">Book this table</a>`
+						: `<p class="muted" style="font-size:0.85rem;">Try another time to see it open up.</p>`}
+				</div>
+			`;
+			}).join('');
+		}catch(err){
+			resultsRegion.innerHTML = '';
+			errorEl.textContent = err.message;
+			toast(err.message, 'error');
+		}finally{
+			checkBtn.disabled = false;
+			checkBtn.textContent = 'Check availability';
+		}
+	}
+
+	form.addEventListener('submit', (e) => { e.preventDefault(); checkAvailability(); });
+
+	checkAvailability(); // show today's 7–9pm availability immediately on load
+</script>
+</body>
+</html>

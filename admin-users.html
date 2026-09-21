@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Customers — Admin — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);">Customers</h1>
+				<p class="muted">Everyone with a customer account. Remove one if needed.</p>
+			</div>
+
+			<div id="listRegion" class="res-list">
+				<div class="res-card"><div class="skeleton" style="width:60%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:50%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:70%;"></div></div>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderAdminNav('admin-users.html');
+	requireAuth({ role: 'admin' });
+
+	function formatJoined(iso){
+		return new Date(iso).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+	}
+
+	async function loadCustomers(){
+		const region = document.getElementById('listRegion');
+		try{
+			const customers = await api('/api/admin/users');
+
+			if (customers.length === 0){
+				region.innerHTML = `
+					<div class="empty-state card">
+						<h3>No customers yet</h3>
+						<p class="muted">Accounts will appear here as people sign up.</p>
+					</div>`;
+				return;
+			}
+
+			region.innerHTML = customers.map(c => {
+				const reservationNote = `${c._count.reservations} reservation${c._count.reservations === 1 ? '' : 's'}`;
+				return `
+					<div class="res-card" data-id="${c.id}">
+						<div class="res-card__info">
+							<h3>${escapeHtml(c.name)}</h3>
+							<p>${escapeHtml(c.email)} · Joined ${formatJoined(c.createdAt)} · ${reservationNote}</p>
+						</div>
+						<div class="res-card__actions">
+							<a class="btn btn--small btn--outline-dark" href="admin-reservations.html?customerId=${c.id}&customerName=${encodeURIComponent(c.name)}">View reservations</a>
+							<button class="btn btn--small btn--danger" data-action="delete" data-id="${c.id}">Delete</button>
+						</div>
+					</div>
+				`;
+			}).join('');
+
+			region.querySelectorAll('button[data-action="delete"]').forEach(btn => {
+				btn.addEventListener('click', () => deleteCustomer(btn.dataset.id, btn));
+			});
+		}catch(err){
+			region.innerHTML = `<p class="form-error">${escapeHtml(err.message)}</p>`;
+			toast(err.message, 'error');
+		}
+	}
+
+	async function deleteCustomer(id, btn){
+		const card = btn.closest('.res-card');
+		const name = card.querySelector('h3').textContent.trim();
+		if (!confirm(`Delete the account for "${name}"? This can't be undone.`)) return;
+
+		btn.disabled = true;
+		try{
+			await api(`/api/admin/users/${id}`, { method: 'DELETE' });
+			toast('Customer deleted.', 'success');
+			loadCustomers();
+		}catch(err){
+			btn.disabled = false;
+			toast(err.message, 'error');
+		}
+	}
+
+	loadCustomers();
+</script>
+</body>
+</html>

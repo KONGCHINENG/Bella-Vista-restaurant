@@ -1,0 +1,70 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Customers are the only accounts that can hold reservations — kept as its
+// own table (rather than a User with a role field) because a customer and
+// an admin are structurally different: only one of them ever books tables.
+model Customer {
+  id           Int           @id @default(autoincrement())
+  name         String
+  email        String        @unique
+  passwordHash String
+  reservations Reservation[]
+  createdAt    DateTime      @default(now())
+}
+
+// Admin accounts never reserve a table, so there is intentionally no
+// reservations relation here.
+model Admin {
+  id           Int      @id @default(autoincrement())
+  name         String
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Table {
+  id           Int           @id @default(autoincrement())
+  tableNumber  Int           @unique
+  seats        Int
+  reservations Reservation[]
+}
+
+model MenuItem {
+  id          Int      @id @default(autoincrement())
+  category    String   // "starter" | "main" | "dessert"
+  name        String
+  description String
+  price       Int      // whole dollars — the menu has never shown cents
+  photo       String?  // filename in the project root, e.g. "burrata-e-prosciutto.jpg"
+  createdAt   DateTime @default(now())
+}
+
+model Reservation {
+  id            Int      @id @default(autoincrement())
+  customerId    Int?     // nullable — deleting the customer sets this to
+                         // null rather than deleting the reservation itself
+  customerName  String   // snapshot taken at booking time, so the record
+  customerEmail String   // still means something once customerId is gone
+  tableId       Int
+  date          DateTime
+  startTime     DateTime
+  endTime       DateTime
+  status        String   @default("pending") // pending | confirmed | completed | cancelled
+  createdAt     DateTime @default(now())
+
+  customer      Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  table         Table     @relation(fields: [tableId], references: [id])
+}

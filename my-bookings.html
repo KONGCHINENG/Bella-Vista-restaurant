@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My bookings — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div class="center-title" style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);">My bookings</h1>
+				<p class="muted">Everything you've reserved at Bella Vista.</p>
+			</div>
+
+			<div id="listRegion" class="res-list">
+				<!-- Skeleton placeholders shown while the real list loads -->
+				<div class="res-card"><div class="skeleton" style="width:60%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:45%;"></div></div>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderNav('my-bookings.html');
+	requireAuth();
+
+	// `date` is stored as UTC midnight of the chosen calendar day (it carries
+	// no wall-clock meaning), so it's formatted in UTC — applying
+	// RESTAURANT_TZ here would shift it back a day. `startTime`/`endTime` DO
+	// carry real wall-clock meaning, so those use RESTAURANT_TZ (app.js) to
+	// always read as the restaurant's own local time, for every viewer.
+	function formatDate(iso){
+		return new Date(iso).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', timeZone: 'UTC' });
+	}
+	function formatTime(iso){
+		return new Date(iso).toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', timeZone: RESTAURANT_TZ });
+	}
+
+	async function loadBookings(){
+		const region = document.getElementById('listRegion');
+		try{
+			const reservations = await api('/api/my-reservations');
+
+			if (reservations.length === 0){
+				region.innerHTML = `
+					<div class="empty-state card">
+						<h3>No bookings yet</h3>
+						<p class="muted" style="margin-bottom:var(--space-s);">When you reserve a table, it'll show up here.</p>
+						<a href="book.html" class="btn">Book a table</a>
+					</div>`;
+				return;
+			}
+
+			region.innerHTML = reservations.map(r => `
+				<div class="res-card">
+					<div class="res-card__info">
+						<h3>Table ${r.table.tableNumber} · ${r.table.seats} seats</h3>
+						<p>${formatDate(r.date)} · ${formatTime(r.startTime)}–${formatTime(r.endTime)}</p>
+					</div>
+					<span class="status-badge status-badge--${r.status}">${r.status}</span>
+				</div>
+			`).join('');
+		}catch(err){
+			region.innerHTML = `<p class="form-error">${err.message}</p>`;
+			toast(err.message, 'error');
+		}
+	}
+
+	loadBookings();
+</script>
+</body>
+</html>

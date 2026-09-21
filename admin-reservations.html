@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reservations — Admin — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);" id="pageTitle">Reservations</h1>
+				<p class="muted" id="pageSubtitle">Every booking across the restaurant. Confirm or cancel as needed.</p>
+			</div>
+
+			<div id="listRegion" class="res-list">
+				<div class="res-card"><div class="skeleton" style="width:70%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:50%;"></div></div>
+				<div class="res-card"><div class="skeleton" style="width:60%;"></div></div>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderAdminNav('admin-reservations.html');
+	requireAuth({ role: 'admin' });
+
+	// `date` is stored as UTC midnight of the chosen calendar day (it carries
+	// no wall-clock meaning), so it's formatted in UTC — applying
+	// RESTAURANT_TZ here would shift it back a day. `startTime`/`endTime` DO
+	// carry real wall-clock meaning, so those use RESTAURANT_TZ (app.js) to
+	// always read as the restaurant's own local time, for every viewer.
+	function formatDate(iso){
+		return new Date(iso).toLocaleDateString(undefined, { weekday:'short', month:'short', day:'numeric', timeZone: 'UTC' });
+	}
+	function formatTime(iso){
+		return new Date(iso).toLocaleTimeString(undefined, { hour:'numeric', minute:'2-digit', timeZone: RESTAURANT_TZ });
+	}
+
+	// Arriving from a customer's row on the Customers page filters this list
+	// down to just their bookings, so admin doesn't have to scan the full
+	// list to find them.
+	const params = new URLSearchParams(window.location.search);
+	const filterCustomerId = params.has('customerId') ? Number(params.get('customerId')) : null;
+	const filterCustomerName = params.get('customerName') || '';
+
+	if (filterCustomerId){
+		document.getElementById('pageTitle').textContent = `Reservations for ${filterCustomerName}`;
+		document.getElementById('pageSubtitle').innerHTML = `Showing only this customer's bookings. <a href="admin-reservations.html">Show everyone</a>`;
+	}
+
+	async function loadReservations(){
+		const region = document.getElementById('listRegion');
+		try{
+			let reservations = await api('/api/admin/reservations');
+			if (filterCustomerId){
+				reservations = reservations.filter(r => r.customerId === filterCustomerId);
+			}
+
+			if (reservations.length === 0){
+				region.innerHTML = filterCustomerId
+					? `<div class="empty-state card">
+							<h3>No reservations for ${escapeHtml(filterCustomerName)}</h3>
+							<p class="muted">This customer hasn't booked a table yet.</p>
+						</div>`
+					: `<div class="empty-state card">
+							<h3>No reservations yet</h3>
+							<p class="muted">Bookings will appear here as customers make them.</p>
+						</div>`;
+				return;
+			}
+
+			region.innerHTML = reservations.map(r => `
+				<div class="res-card" data-id="${r.id}">
+					<div class="res-card__info">
+						<h3>${escapeHtml(r.customerName)} · Table ${r.table.tableNumber}${r.customerId === null ? ' <span class="muted" style="font-weight:400; font-size:0.8em;">(account deleted)</span>' : ''}</h3>
+						<p>${escapeHtml(r.customerEmail)} · ${formatDate(r.date)} · ${formatTime(r.startTime)}–${formatTime(r.endTime)}</p>
+					</div>
+					<div class="res-card__actions">
+						<span class="status-badge status-badge--${r.status}">${r.status}</span>
+						${r.status === 'pending' ? `<button class="btn btn--small" data-action="confirmed" data-id="${r.id}">Confirm</button>` : ''}
+						${r.status === 'confirmed' ? `<button class="btn btn--small" data-action="completed" data-id="${r.id}">Complete</button>` : ''}
+						${(r.status === 'pending' || r.status === 'confirmed') ? `<button class="btn btn--small btn--danger" data-action="cancelled" data-id="${r.id}">Cancel</button>` : ''}
+					</div>
+				</div>
+			`).join('');
+
+			region.querySelectorAll('button[data-action]').forEach(btn => {
+				btn.addEventListener('click', () => updateStatus(btn.dataset.id, btn.dataset.action, btn));
+			});
+		}catch(err){
+			region.innerHTML = `<p class="form-error">${escapeHtml(err.message)}</p>`;
+			toast(err.message, 'error');
+		}
+	}
+
+	async function updateStatus(id, status, btn){
+		const card = btn.closest('.res-card');
+		card.style.opacity = '0.5'; // immediate feedback that the click registered
+		btn.disabled = true;
+
+		try{
+			await api(`/api/admin/reservations/${id}`, { method: 'PATCH', body: { status } });
+			toast(`Booking ${status}.`, status === 'cancelled' ? 'error' : 'success');
+			loadReservations(); // refresh the whole list so badges/buttons stay correct
+		}catch(err){
+			card.style.opacity = '1';
+			btn.disabled = false;
+			toast(err.message, 'error');
+		}
+	}
+
+	loadReservations();
+</script>
+</body>
+</html>

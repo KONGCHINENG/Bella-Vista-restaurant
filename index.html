@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bella Vista — Trattoria & Wine Bar</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main>
+		<!-- ===================== HERO ===================== -->
+		<section class="hero">
+			<video class="hero__video" id="heroVideo" autoplay muted loop playsinline poster="image/hero.jpg" onerror="this.style.display='none'">
+				<source src="hero-video.mp4" type="video/mp4">
+			</video>
+			<div class="wrap hero__inner">
+				<p class="hero__eyebrow">Trattoria &amp; wine bar, est. 2014</p>
+				<h1>A table always feels like coming home.</h1>
+				<p>Slow-cooked Italian food, a cellar built by hand, and a room
+				that fills up on its own most nights — book ahead to be sure of a seat.</p>
+				<div class="hero__actions">
+					<a href="signup.html" class="btn">Reserve a table</a>
+					<a href="menu.html" class="btn btn--ghost">See the menu</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===================== ABOUT / STORY ===================== -->
+		<section class="section">
+			<div class="wrap split">
+				<img src="image/dining-room.jpg" alt="The dining room at Bella Vista, warmly lit in the evening">
+				<div>
+					<h2 style="font-size:var(--step-3); margin-bottom:var(--space-s);">Cooking the way our nonna did</h2>
+					<p class="muted" style="margin-bottom:var(--space-s);">Bella Vista started as a six-table room above a
+					wine shop. Everything on the menu is still made the same way it was that first year —
+					pasta rolled by hand each morning, a sauce that simmers for most of the day, and bread
+					that never sees a freezer.</p>
+					<p class="muted">We take walk-ins when we can, but the room is small and fills up fast.
+					A reservation is the only way to guarantee your table.</p>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===================== GALLERY ===================== -->
+		<section class="section">
+			<div class="wrap">
+				<div class="section__head center-title" style="margin-inline:auto;">
+					<h2>Inside Bella Vista</h2>
+					<p>A small room, six days a week, most nights full by seven.</p>
+				</div>
+				<div class="gallery-grid">
+					<div class="gallery-item gallery-item--1">
+						<img src="image/gallery-dining-room.jpg" alt="The dining room at Bella Vista" loading="lazy" onerror="this.style.display='none'">
+						<span>The dining room, most evenings</span>
+					</div>
+					<div class="gallery-item gallery-item--2">
+						<img src="image/gallery-cellar.jpg" alt="The wine cellar at Bella Vista" loading="lazy" onerror="this.style.display='none'">
+						<span>The cellar</span>
+					</div>
+					<div class="gallery-item gallery-item--3">
+						<img src="image/gallery-pasta.jpg" alt="Fresh pasta being rolled by hand" loading="lazy" onerror="this.style.display='none'">
+						<span>Pasta, rolled by hand each morning</span>
+					</div>
+					<div class="gallery-item gallery-item--4">
+						<img src="image/table_5.jpg" alt="The private booth at table 5" loading="lazy" onerror="this.style.display='none'">
+						<span>The private booth, table 5</span>
+					</div>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===================== MENU HIGHLIGHTS ===================== -->
+		<section id="menu" class="section section--soft">
+			<div class="wrap">
+				<div class="section__head center-title" style="margin-inline:auto;">
+					<h2>From the menu</h2>
+					<p>A few things people come back for.</p>
+				</div>
+				<div class="menu-grid">
+					<div class="menu-item">
+						<div class="menu-item__row"><span>Tagliatelle al ragù</span><span>$24</span></div>
+						<p>Slow-braised beef and pork, six-hour sauce, fresh egg pasta.</p>
+					</div>
+					<div class="menu-item">
+						<div class="menu-item__row"><span>Burrata e prosciutto</span><span>$19</span></div>
+						<p>Puglian burrata, 18-month prosciutto, charred bread.</p>
+					</div>
+					<div class="menu-item">
+						<div class="menu-item__row"><span>Branzino al forno</span><span>$32</span></div>
+						<p>Whole roasted sea bass, lemon, capers, Taggiasca olives.</p>
+					</div>
+					<div class="menu-item">
+						<div class="menu-item__row"><span>Tiramisù della casa</span><span>$12</span></div>
+						<p>Made fresh daily — no exceptions, no shortcuts.</p>
+					</div>
+				</div>
+				<div style="text-align:center; margin-top:var(--space-l);">
+					<a href="menu.html" class="btn btn--outline-dark">View full menu</a>
+				</div>
+			</div>
+		</section>
+
+		<!-- ===================== TESTIMONIAL ===================== -->
+		<section class="section">
+			<div class="wrap testimonial">
+				<p>"The kind of place you bring people you actually like. We've celebrated three
+				birthdays there this year alone."</p>
+				<cite>— Priya R., regular since 2019</cite>
+			</div>
+		</section>
+
+		<!-- ===================== CTA ===================== -->
+		<section class="section section--soft">
+			<div class="wrap" style="text-align:center;">
+				<h2 style="font-size:var(--step-3); margin-bottom:var(--space-s);">Save your table</h2>
+				<p class="muted" style="margin-bottom:var(--space-m);">Booking takes under a minute, and you'll get an
+				instant confirmation — no calling, no waiting on hold.</p>
+				<a href="signup.html" class="btn">Get started</a>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<p>&copy; Bella Vista Trattoria · 4 Fig Lane · Open Tue–Sun, 5pm–11pm</p>
+	</footer>
+
+<script src="app.js"></script>
+<script>
+	renderNav('index.html');
+
+	// Respect reduced-motion: a looping autoplay video is exactly the kind
+	// of motion that setting exists to suppress. CSS alone can't stop video
+	// playback, so this pauses it and leaves the poster frame showing.
+	if (window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+		const heroVideo = document.getElementById('heroVideo');
+		if (heroVideo) heroVideo.pause();
+	}
+</script>
+</body>
+</html>

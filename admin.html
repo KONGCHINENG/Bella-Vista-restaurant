@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div style="text-align:left; max-width:640px; margin-bottom:var(--space-m);">
+				<h1 style="font-size:var(--step-2);">Admin dashboard</h1>
+				<p class="muted">An overview of the restaurant — jump into any section below.</p>
+			</div>
+
+			<div id="statRegion" class="stat-grid">
+				<div class="stat-card"><div class="skeleton" style="width:40%; height:2rem;"></div></div>
+				<div class="stat-card"><div class="skeleton" style="width:40%; height:2rem;"></div></div>
+				<div class="stat-card"><div class="skeleton" style="width:40%; height:2rem;"></div></div>
+				<div class="stat-card"><div class="skeleton" style="width:40%; height:2rem;"></div></div>
+			</div>
+
+			<div class="admin-links">
+				<a href="admin-reservations.html" class="card admin-link-card">
+					<h3>Reservations</h3>
+					<p class="muted">Confirm or cancel bookings as they come in.</p>
+				</a>
+				<a href="admin-menu.html" class="card admin-link-card">
+					<h3>Menu</h3>
+					<p class="muted">Add, edit, or remove dishes from the live menu.</p>
+				</a>
+				<a href="admin-users.html" class="card admin-link-card">
+					<h3>Customers</h3>
+					<p class="muted">View accounts or remove a customer.</p>
+				</a>
+			</div>
+
+			<div class="card" style="margin-top:var(--space-l); max-width:440px;">
+				<div class="card__head">
+					<h2 style="font-size:var(--step-1);">Add an admin</h2>
+					<p class="muted" style="font-size:0.9rem;">Creates a separate admin account with its own login.</p>
+				</div>
+				<form id="adminForm" novalidate>
+					<div class="field">
+						<label for="adminName">Full name</label>
+						<input type="text" id="adminName" required>
+					</div>
+					<div class="field">
+						<label for="adminEmail">Email</label>
+						<input type="email" id="adminEmail" required>
+					</div>
+					<div class="field">
+						<label for="adminPassword">Password</label>
+						<input type="password" id="adminPassword" minlength="6" required>
+					</div>
+					<p class="form-error" id="adminFormError" role="alert"></p>
+					<button type="submit" class="btn" id="adminSubmitBtn">Create admin account</button>
+				</form>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderAdminNav('admin.html');
+	requireAuth({ role: 'admin' });
+
+	async function loadStats(){
+		const region = document.getElementById('statRegion');
+		try{
+			const [reservations, menuItems, users] = await Promise.all([
+				api('/api/admin/reservations'),
+				api('/api/menu'),
+				api('/api/admin/users')
+			]);
+
+			const pending = reservations.filter(r => r.status === 'pending').length;
+
+			const stats = [
+				{ value: pending, label: 'Pending reservations' },
+				{ value: reservations.length, label: 'Total reservations' },
+				{ value: menuItems.length, label: 'Menu items' },
+				{ value: users.length, label: 'Registered customers' }
+			];
+
+			region.innerHTML = stats.map(s => `
+				<div class="stat-card">
+					<div class="stat-card__value">${s.value}</div>
+					<div class="stat-card__label">${s.label}</div>
+				</div>
+			`).join('');
+		}catch(err){
+			region.innerHTML = `<p class="form-error">${escapeHtml(err.message)}</p>`;
+			toast(err.message, 'error');
+		}
+	}
+
+	loadStats();
+
+	const adminForm = document.getElementById('adminForm');
+	const adminFormError = document.getElementById('adminFormError');
+	const adminSubmitBtn = document.getElementById('adminSubmitBtn');
+
+	adminForm.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		adminFormError.textContent = '';
+		adminSubmitBtn.disabled = true;
+		adminSubmitBtn.textContent = 'Creating…';
+
+		try{
+			await api('/api/admin/admins', {
+				method: 'POST',
+				body: {
+					name: document.getElementById('adminName').value.trim(),
+					email: document.getElementById('adminEmail').value.trim(),
+					password: document.getElementById('adminPassword').value
+				}
+			});
+			toast('Admin account created.', 'success');
+			adminForm.reset();
+		}catch(err){
+			adminFormError.textContent = err.message;
+			toast(err.message, 'error');
+		}finally{
+			adminSubmitBtn.disabled = false;
+			adminSubmitBtn.textContent = 'Create admin account';
+		}
+	});
+</script>
+</body>
+</html>

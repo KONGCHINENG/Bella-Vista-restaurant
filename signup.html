@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create an account — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div class="card card--narrow">
+				<div class="card__head">
+					<h1>Create your account</h1>
+					<p>Takes about a minute — then you're ready to book.</p>
+				</div>
+
+				<form id="signupForm" novalidate>
+					<div class="field">
+						<label for="name">Full name</label>
+						<input type="text" id="name" name="name" autocomplete="name" required>
+					</div>
+					<div class="field">
+						<label for="email">Email</label>
+						<input type="email" id="email" name="email" autocomplete="email" required>
+					</div>
+					<div class="field">
+						<label for="password">Password</label>
+						<input type="password" id="password" name="password" autocomplete="new-password" minlength="6" required>
+					</div>
+
+					<p class="form-error" id="formError" role="alert"></p>
+
+					<button type="submit" class="btn btn--full" id="submitBtn">Create account</button>
+				</form>
+
+				<p class="form-footnote">Already have an account? <a href="login.html">Log in</a></p>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderNav('signup.html');
+
+	const form = document.getElementById('signupForm');
+	const errorEl = document.getElementById('formError');
+	const submitBtn = document.getElementById('submitBtn');
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		errorEl.textContent = '';
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Creating account…';
+
+		try{
+			await api('/api/signup', {
+				method: 'POST',
+				body: {
+					name: document.getElementById('name').value.trim(),
+					email: document.getElementById('email').value.trim(),
+					password: document.getElementById('password').value
+				}
+			});
+
+			// Signup doesn't return a token in this API, so log in immediately
+			// after — one less step for the person to think about.
+			const loginResult = await api('/api/login', {
+				method: 'POST',
+				body: {
+					email: document.getElementById('email').value.trim(),
+					password: document.getElementById('password').value
+				}
+			});
+			setCustomerToken(loginResult.token);
+
+			toast('Account created — welcome to Bella Vista.', 'success');
+			window.location.href = 'book.html';
+		}catch(err){
+			errorEl.textContent = err.message;
+
+			// An email that's already registered isn't something to fix and
+			// resubmit — send them straight to where they actually need to go.
+			if (err.message === 'You have signed up already'){
+				toast(err.message, 'error');
+				submitBtn.textContent = 'Redirecting to log in…';
+				setTimeout(() => { window.location.href = 'login.html'; }, 1800);
+				return;
+			}
+
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Create account';
+		}
+	});
+</script>
+</body>
+</html>

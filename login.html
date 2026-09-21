@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Log in — Bella Vista</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+	<div id="site-nav" class="nav"></div>
+
+	<main class="app-shell">
+		<div class="wrap">
+			<div class="card card--narrow">
+				<div class="card__head">
+					<h1>Welcome back</h1>
+					<p>Log in to book a table or manage your reservations.</p>
+				</div>
+
+				<form id="loginForm" novalidate>
+					<div class="field">
+						<label for="email">Email</label>
+						<input type="email" id="email" name="email" autocomplete="email" required>
+					</div>
+					<div class="field">
+						<label for="password">Password</label>
+						<input type="password" id="password" name="password" autocomplete="current-password" required>
+					</div>
+
+					<p class="form-error" id="formError" role="alert"></p>
+
+					<button type="submit" class="btn btn--full" id="submitBtn">Log in</button>
+				</form>
+
+				<p class="form-footnote">New here? <a href="signup.html">Create an account</a></p>
+			</div>
+		</div>
+	</main>
+
+<script src="app.js"></script>
+<script>
+	renderNav('login.html');
+
+	const form = document.getElementById('loginForm');
+	const errorEl = document.getElementById('formError');
+	const submitBtn = document.getElementById('submitBtn');
+
+	form.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		errorEl.textContent = '';
+		submitBtn.disabled = true;
+		submitBtn.textContent = 'Logging in…';
+
+		try{
+			const result = await api('/api/login', {
+				method: 'POST',
+				body: {
+					email: document.getElementById('email').value.trim(),
+					password: document.getElementById('password').value
+				}
+			});
+			setCustomerToken(result.token);
+			toast('Logged in.', 'success');
+			window.location.href = 'book.html';
+		}catch(err){
+			errorEl.textContent = err.message;
+			submitBtn.disabled = false;
+			submitBtn.textContent = 'Log in';
+		}
+	});
+</script>
+</body>
+</html>
