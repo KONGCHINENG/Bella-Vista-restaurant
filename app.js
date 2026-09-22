@@ -4,9 +4,8 @@
    logged in, rendering the nav bar to match that state, and toast messages.
    ========================================================================== */
 
-// Change this one line when you deploy your backend somewhere other than
-// your own computer (e.g. to your live Render URL).
-const API_BASE = 'http://localhost:3000';
+// Change this one line if you ever move the backend elsewhere.
+const API_BASE = 'https://bella-vista-restaurant-wc7r.onrender.com';
 
 // The restaurant's own timezone — used to DISPLAY every stored reservation
 // time consistently, regardless of which timezone the viewer's browser is
