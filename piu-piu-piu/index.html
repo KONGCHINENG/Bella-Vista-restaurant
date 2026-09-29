@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Piu Piu Piu · Coffee Bar, Kuala Lumpur</title>
+  <meta name="description" content="Piu Piu Piu — a tiny retro coffee bar in The Zhongshan Building, Kuala Lumpur. Espresso tonic, matcha, house specials and cheesecake. Rated 4.6 on Google." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #141414;
+      --ink-soft: #3a3a3a;
+      --muted: #6d6a64;
+      --paper: #fbf8f2;
+      --card: #ffffff;
+      --line: #e7e1d6;
+      --red: #d8342b;
+      --red-dark: #b0261e;
+      --matcha: #5f7d3a;
+      --sun: #f4c542;
+      --radius: 16px;
+      --shadow: 0 14px 34px -16px rgba(20, 20, 20, .28);
+      --font-display: "Archivo Black", "Arial Black", system-ui, sans-serif;
+      --font-body: "Inter", system-ui, -apple-system, sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { scroll-behavior: smooth; scroll-padding-top: 76px; }
+    body {
+      margin: 0; background: var(--paper); color: var(--ink);
+      font-family: var(--font-body); font-size: 16px; line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    :focus-visible { outline: 3px solid var(--red); outline-offset: 3px; border-radius: 6px; }
+    .wrap { width: min(1120px, 100% - 32px); margin-inline: auto; }
+    .icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: .78rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--red);
+    }
+    h1, h2, h3 { font-family: var(--font-display); font-weight: 400; line-height: 1.05; margin: 0; letter-spacing: -.01em; }
+    h2 { font-size: clamp(2rem, 4.5vw, 3rem); }
+    section { padding: 96px 0; }
+    .section-head { max-width: 620px; margin-bottom: 44px; }
+    .section-head p { color: var(--muted); margin: 14px 0 0; font-size: 1.05rem; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 22px;
+      border-radius: 999px; font-weight: 600; text-decoration: none; border: 2px solid var(--ink);
+      transition: transform .15s ease, background .15s ease, color .15s ease, box-shadow .15s ease;
+    }
+    .btn-primary { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 var(--red); }
+    .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--red); }
+    .btn-ghost { background: transparent; color: var(--ink); }
+    .btn-ghost:hover { background: var(--ink); color: #fff; }
+
+    /* Nav */
+    .nav {
+      position: sticky; top: 0; z-index: 50; background: rgba(251, 248, 242, .88);
+      backdrop-filter: saturate(160%) blur(10px); -webkit-backdrop-filter: saturate(160%) blur(10px);
+      border-bottom: 1px solid transparent; transition: border-color .2s;
+    }
+    .nav.scrolled { border-color: var(--line); }
+    .nav-inner { display: flex; align-items: center; justify-content: space-between; height: 68px; }
+    .logo { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-size: 1.2rem; text-decoration: none; letter-spacing: .02em; }
+    .logo-mark { width: 34px; height: 34px; }
+    .nav-links { display: flex; gap: 28px; list-style: none; margin: 0; padding: 0; }
+    .nav-links a { text-decoration: none; font-weight: 500; color: var(--ink-soft); font-size: .95rem; }
+    .nav-links a:hover { color: var(--red); }
+    .nav-cta { min-height: 42px; padding: 0 18px; font-size: .9rem; }
+    .menu-toggle { display: none; background: none; border: 0; padding: 10px; margin-right: -10px; cursor: pointer; color: var(--ink); }
+
+    /* Hero */
+    .hero { padding: 64px 0 88px; position: relative; overflow: hidden; }
+    .hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
+    .hero h1 { font-size: clamp(3rem, 7vw, 5.2rem); white-space: nowrap; line-height: .92; margin: 18px 0 22px; }
+    .hero h1 .accent { color: var(--red); display: block; }
+    .hero-lead { font-size: 1.15rem; color: var(--ink-soft); max-width: 480px; margin: 0 0 30px; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 36px; }
+    .hero-meta { display: flex; flex-wrap: wrap; gap: 12px 28px; color: var(--muted); font-size: .95rem; }
+    .hero-meta span { display: inline-flex; align-items: center; gap: 8px; }
+    .hero-meta strong { color: var(--ink); }
+    .stars { color: var(--sun); letter-spacing: 1px; }
+    .status-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); display: inline-block; }
+    .status-dot.open { background: #2f9e44; box-shadow: 0 0 0 4px rgba(47, 158, 68, .18); }
+
+    .hero-visual { position: relative; }
+    .hero-photo {
+      border-radius: 24px; overflow: hidden; border: 2px solid var(--ink); box-shadow: 10px 10px 0 var(--ink);
+      aspect-ratio: 4 / 4.6; max-height: 640px; width: 100%; background: var(--line);
+    }
+    .hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: 55% 45%; }
+    .sticker {
+      position: absolute; display: grid; place-items: center; text-align: center;
+      font-family: var(--font-display); border: 2px solid var(--ink);
+    }
+    .sticker-smile { width: 108px; height: 108px; top: -30px; right: -18px; border-radius: 50%; background: var(--sun); transform: rotate(10deg); }
+    .sticker-smile svg { width: 64px; height: 64px; }
+    .sticker-tag {
+      bottom: -22px; left: -16px; padding: 12px 18px; border-radius: 12px; background: var(--ink); color: #fff;
+      font-size: .95rem; letter-spacing: .04em; transform: rotate(-4deg); box-shadow: 4px 4px 0 var(--sun);
+    }
+
+    /* Marquee */
+    .marquee { background: var(--ink); color: #fff; overflow: hidden; border-block: 2px solid var(--ink); }
+    .marquee-track { display: flex; gap: 40px; width: max-content; padding: 16px 0; animation: scroll 36s linear infinite; }
+    .marquee-track span { font-family: var(--font-display); font-size: 1.15rem; letter-spacing: .06em; white-space: nowrap; display: inline-flex; align-items: center; gap: 40px; }
+    .marquee-track span::after { content: "✦"; color: var(--sun); }
+    @keyframes scroll { to { transform: translateX(-50%); } }
+
+    /* Menu */
+    .menu { background: var(--card); border-block: 1px solid var(--line); }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 36px; }
+    .tab {
+      font: inherit; font-weight: 600; font-size: .95rem; cursor: pointer; min-height: 44px; padding: 0 20px;
+      border-radius: 999px; border: 2px solid var(--line); background: var(--paper); color: var(--ink-soft);
+      transition: all .15s ease;
+    }
+    .tab:hover { border-color: var(--ink); color: var(--ink); }
+    .tab[aria-selected="true"] { background: var(--ink); border-color: var(--ink); color: #fff; }
+    .menu-panel[hidden] { display: none; }
+    .menu-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 56px; list-style: none; margin: 0; padding: 0; }
+    .menu-item { display: flex; align-items: baseline; gap: 12px; padding: 18px 0; border-bottom: 1px dashed var(--line); }
+    .menu-item .name { font-weight: 700; font-size: 1.05rem; }
+    .menu-item .desc { display: block; font-size: .88rem; color: var(--muted); font-weight: 400; margin-top: 2px; }
+    .menu-item .dots { flex: 1; }
+    .menu-item .price { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .badge {
+      display: inline-block; font-size: .68rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 999px; background: var(--red); color: #fff; margin-left: 8px; vertical-align: 2px;
+    }
+    .badge.green { background: var(--matcha); }
+    .menu-foot {
+      margin-top: 40px; display: flex; flex-wrap: wrap; gap: 16px; justify-content: space-between; align-items: center;
+      padding: 20px 24px; border-radius: var(--radius); background: var(--paper); border: 1px solid var(--line);
+    }
+    .addons { display: flex; flex-wrap: wrap; gap: 10px 22px; font-size: .92rem; color: var(--ink-soft); }
+    .addons b { color: var(--ink); }
+    .pay { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: .92rem; }
+
+    /* Favourites */
+    .fav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .fav {
+      background: var(--card); border: 2px solid var(--ink); border-radius: var(--radius); padding: 28px;
+      box-shadow: 6px 6px 0 var(--ink); transition: transform .2s ease, box-shadow .2s ease;
+    }
+    .fav:hover { transform: translate(-3px, -3px); box-shadow: 9px 9px 0 var(--ink); }
+    .fav-icon { width: 56px; height: 56px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 22px; border: 2px solid var(--ink); }
+    .fav-icon svg { width: 28px; height: 28px; }
+    .fav h3 { font-size: 1.4rem; margin-bottom: 10px; }
+    .fav p { color: var(--muted); margin: 0 0 18px; }
+    .fav .price-tag { font-weight: 700; }
+
+    /* About */
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+    .about-copy p { color: var(--ink-soft); font-size: 1.05rem; margin: 0 0 18px; }
+    .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+    .fact { border-top: 2px solid var(--ink); padding-top: 14px; }
+    .fact strong { display: block; font-family: var(--font-display); font-size: 2rem; line-height: 1.1; }
+    .fact span { color: var(--muted); font-size: .9rem; }
+    .quotes { display: grid; gap: 16px; }
+    .quote { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 24px 26px; box-shadow: var(--shadow); }
+    .quote:nth-child(2) { margin-left: 32px; }
+    .quote p { margin: 10px 0 0; font-size: 1.02rem; }
+    .quote-tag { font-size: .78rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+
+    /* Visit */
+    .visit { background: var(--ink); color: #fff; }
+    .visit .eyebrow { color: var(--sun); }
+    .visit .section-head p { color: #b9b5ad; }
+    .visit-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 32px; align-items: stretch; }
+    .visit-card { background: #1f1f1f; border: 1px solid #2e2e2e; border-radius: var(--radius); padding: 32px; }
+    .info-row { display: flex; gap: 14px; padding: 16px 0; border-bottom: 1px solid #2e2e2e; }
+    .info-row:first-child { padding-top: 0; }
+    .info-row .icon { color: var(--sun); margin-top: 3px; }
+    .info-row small { display: block; color: #9a968e; font-size: .8rem; text-transform: uppercase; letter-spacing: .1em; font-weight: 600; }
+    .info-row a { text-decoration: none; }
+    .info-row a:hover { color: var(--sun); }
+    .hours { width: 100%; border-collapse: collapse; margin-top: 18px; font-size: .95rem; }
+    .hours td { padding: 7px 0; color: #cfcbc3; }
+    .hours td:last-child { text-align: right; font-variant-numeric: tabular-nums; }
+    .hours tr.today td { color: #fff; font-weight: 700; }
+    .hours tr.today td:first-child::after { content: " · Today"; color: var(--sun); font-weight: 600; }
+    .hours tr.closed td:last-child { color: #ff8a80; }
+    .visit-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+    .visit .btn-primary { background: var(--sun); color: var(--ink); border-color: var(--sun); box-shadow: 4px 4px 0 var(--red); }
+    .visit .btn-ghost { color: #fff; border-color: #fff; }
+    .visit .btn-ghost:hover { background: #fff; color: var(--ink); }
+    .map { border-radius: var(--radius); overflow: hidden; border: 1px solid #2e2e2e; min-height: 420px; background: #1f1f1f; }
+    .map iframe { width: 100%; height: 100%; min-height: 420px; border: 0; display: block; filter: grayscale(.2) contrast(1.05); }
+
+    /* Footer */
+    footer { padding: 40px 0; font-size: .9rem; color: var(--muted); }
+    .foot-inner { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 16px; }
+
+    /* Reveal */
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.in { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      .marquee-track { animation: none; }
+      .reveal { opacity: 1; transform: none; transition: none; }
+      * { transition: none !important; }
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid, .about-grid, .visit-grid { grid-template-columns: 1fr; }
+      .hero-grid { gap: 64px; }
+      .fav-grid { grid-template-columns: 1fr; }
+      .menu-list { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      section { padding: 72px 0; }
+      .menu-toggle { display: block; }
+      .nav-cta { display: none; }
+      .nav-links {
+        position: absolute; top: 68px; left: 0; right: 0; flex-direction: column; gap: 0;
+        background: var(--paper); border-bottom: 1px solid var(--line); padding: 8px 16px 16px; display: none;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links a { display: block; padding: 12px 0; font-size: 1.05rem; }
+      .sticker-smile { width: 84px; height: 84px; right: -4px; }
+      .sticker-smile svg { width: 50px; height: 50px; }
+      .sticker-tag { left: -4px; }
+      .hero-photo { box-shadow: 6px 6px 0 var(--ink); }
+      .quote:nth-child(2) { margin-left: 0; }
+      .facts { grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+      .fact strong { font-size: 1.5rem; }
+      .visit-card { padding: 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SVG sprite -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-pin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M16 15h2"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    <symbol id="i-smile" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle cx="32" cy="32" r="28"/><path d="M24 25v5M40 25v5"/><path d="M20 38c3 7 8 10 12 10s9-3 12-10"/></symbol>
+  </svg>
+
+  <header class="nav" id="nav">
+    <div class="wrap nav-inner">
+      <a href="#top" class="logo" aria-label="Piu Piu Piu home">
+        <svg class="logo-mark" viewBox="0 0 34 34" aria-hidden="true">
+          <circle cx="17" cy="17" r="15.5" fill="#f4c542" stroke="#141414" stroke-width="2"/>
+          <path d="M12.5 13v3M21.5 13v3" stroke="#141414" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M10.5 20c1.8 3.4 4.2 5 6.5 5s4.7-1.6 6.5-5" stroke="#141414" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        PIU PIU PIU
+      </a>
+      <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="navLinks">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <ul class="nav-links" id="navLinks">
+        <li><a href="#menu">Menu</a></li>
+        <li><a href="#favourites">Favourites</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#visit">Visit</a></li>
+      </ul>
+      <a href="#visit" class="btn btn-primary nav-cta">Find us</a>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div>
+          <span class="eyebrow">Coffee bar · The Zhongshan Building, KL</span>
+          <h1>Piu Piu Piu<span class="accent">Coffee.</span></h1>
+          <p class="hero-lead">A tiny retro coffee bar with a rock-and-roll, Japanese-kissaten soul. Espresso tonics, matcha blends, house sodas and cheesecakes, made by friendly folks behind the counter.</p>
+          <div class="hero-actions">
+            <a href="#menu" class="btn btn-primary">See the menu <svg class="icon"><use href="#i-arrow"/></svg></a>
+            <a href="https://maps.app.goo.gl/GRrsw71YKCt5qZq59" target="_blank" rel="noopener" class="btn btn-ghost">Get directions</a>
+          </div>
+          <div class="hero-meta">
+            <span><span class="stars" aria-hidden="true">★★★★★</span><strong>4.6</strong> · 202 Google reviews</span>
+            <span><span class="status-dot" id="statusDot"></span><strong id="statusText">Tue–Sun 12:30–6:30 pm</strong></span>
+            <span>RM 1–20 per person</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="hero-photo">
+            <img src="image/lucky-cat.webp" alt="A red and blue lucky cat figurine on the Piu Piu Piu counter, surrounded by smaller lucky cats and daruma dolls" width="1500" height="2000" />
+          </div>
+          <div class="sticker sticker-tag">Cash or e-wallet only</div>
+        </div>
+      </div>
+    </section>
+
+    <div class="marquee" aria-hidden="true">
+      <div class="marquee-track">
+        <span>Espresso Tonic</span><span>Matcha Hero</span><span>Burnt Cheesecake</span><span>Gula Melaka Latte</span><span>Wintermelon Soda</span><span>Military Latte</span><span>Lemon Sour</span><span>Hojicha</span>
+        <span>Espresso Tonic</span><span>Matcha Hero</span><span>Burnt Cheesecake</span><span>Gula Melaka Latte</span><span>Wintermelon Soda</span><span>Military Latte</span><span>Lemon Sour</span><span>Hojicha</span>
+      </div>
+    </div>
+
+    <!-- Menu -->
+    <section class="menu" id="menu">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">The menu</span>
+          <h2>Small bar, big pours.</h2>
+          <p>Everything is made to order at the counter. Prices in Ringgit Malaysia.</p>
+        </div>
+
+        <div class="tabs" role="tablist" aria-label="Menu categories">
+          <button class="tab" role="tab" aria-selected="true" aria-controls="p-coffee" id="t-coffee">Coffee</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-matcha" id="t-matcha" tabindex="-1">Matcha</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-house" id="t-house" tabindex="-1">House Special</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-tea" id="t-tea" tabindex="-1">Tea</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-dessert" id="t-dessert" tabindex="-1">Desserts</button>
+          <button class="tab" role="tab" aria-selected="false" aria-controls="p-drunken" id="t-drunken" tabindex="-1">Drunken Drinks</button>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-coffee" aria-labelledby="t-coffee">
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Espresso</span><span class="dots"></span><span class="price">RM 9</span></li>
+            <li class="menu-item"><span class="name">Black</span><span class="dots"></span><span class="price">RM 11</span></li>
+            <li class="menu-item"><span class="name">White<span class="desc">Add coconut oil +RM 2</span></span><span class="dots"></span><span class="price">RM 13</span></li>
+            <li class="menu-item"><span class="name">Affogato</span><span class="dots"></span><span class="price">RM 14</span></li>
+            <li class="menu-item"><span class="name">Shakerato<span class="desc">Espresso, Earl Grey syrup</span></span><span class="dots"></span><span class="price">RM 14</span></li>
+            <li class="menu-item"><span class="name">Espresso Tonic<span class="badge">Fave</span></span><span class="dots"></span><span class="price">RM 17</span></li>
+            <li class="menu-item"><span class="name">Coffee Float</span><span class="dots"></span><span class="price">RM 17</span></li>
+            <li class="menu-item"><span class="name">Mocha</span><span class="dots"></span><span class="price">RM 15</span></li>
+            <li class="menu-item"><span class="name">Gula Melaka Cafe Latte<span class="badge">Special</span></span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Chocolate</span><span class="dots"></span><span class="price">RM 14</span></li>
+          </ul>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-matcha" aria-labelledby="t-matcha" hidden>
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Matcha Hero / Hojicha Latte<span class="badge green">Fave</span></span><span class="dots"></span><span class="price">RM 14</span></li>
+            <li class="menu-item"><span class="name">H &amp; M<span class="desc">Hojicha and matcha</span></span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Nigel<span class="desc">Matcha, coffee, milk</span></span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Bape<span class="desc">Matcha, chocolate, milk</span></span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Desert Storm<span class="desc">Hojicha, chocolate, milk</span></span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Military Latte<span class="desc">Espresso, chocolate, matcha, milk</span></span><span class="dots"></span><span class="price">RM 18</span></li>
+          </ul>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-house" aria-labelledby="t-house" hidden>
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Lemon Sour</span><span class="dots"></span><span class="price">RM 16</span></li>
+            <li class="menu-item"><span class="name">Lemon Sour +</span><span class="dots"></span><span class="price">RM 26</span></li>
+            <li class="menu-item"><span class="name">Matcha-nade<span class="desc">Matcha and lemonade</span></span><span class="dots"></span><span class="price">RM 17</span></li>
+            <li class="menu-item"><span class="name">Chrysanthemilk<span class="desc">Chrysanthemum and milk</span></span><span class="dots"></span><span class="price">RM 11</span></li>
+            <li class="menu-item"><span class="name">Wintermelon Milk</span><span class="dots"></span><span class="price">RM 11</span></li>
+            <li class="menu-item"><span class="name">Wintermelon Soda<span class="badge">Special</span></span><span class="dots"></span><span class="price">RM 17</span></li>
+            <li class="menu-item"><span class="name">Earl Grey Latte</span><span class="dots"></span><span class="price">RM 14</span></li>
+            <li class="menu-item"><span class="name">Milk Tea<span class="badge">Special</span></span><span class="dots"></span><span class="price">RM 12</span></li>
+          </ul>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-tea" aria-labelledby="t-tea" hidden>
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Assorted Tea<span class="desc">Choose Earl Grey, Peach &amp; Passionfruit or Berry Sensation</span></span><span class="dots"></span><span class="price">RM 10</span></li>
+            <li class="menu-item"><span class="name">Rose Bud Tea<span class="badge green">Pesticide-free</span></span><span class="dots"></span><span class="price">RM 10</span></li>
+            <li class="menu-item"><span class="name">Green Tea with Jasmine</span><span class="dots"></span><span class="price">RM 10</span></li>
+            <li class="menu-item"><span class="name">Lapsang Smoky Tea</span><span class="dots"></span><span class="price">RM 14</span></li>
+          </ul>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-dessert" aria-labelledby="t-dessert" hidden>
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Burnt Cheesecake<span class="badge">Fave</span></span><span class="dots"></span><span class="price">RM 17</span></li>
+            <li class="menu-item"><span class="name">Blueberry Cheesecake</span><span class="dots"></span><span class="price">RM 19</span></li>
+            <li class="menu-item"><span class="name">Matcha Cheesecake</span><span class="dots"></span><span class="price">RM 19</span></li>
+          </ul>
+        </div>
+
+        <div class="menu-panel" role="tabpanel" id="p-drunken" aria-labelledby="t-drunken" hidden>
+          <ul class="menu-list">
+            <li class="menu-item"><span class="name">Spiked Café Latte</span><span class="dots"></span><span class="price">RM 25</span></li>
+            <li class="menu-item"><span class="name">Whiskey Highball</span><span class="dots"></span><span class="price">RM 25</span></li>
+            <li class="menu-item"><span class="name">Gin &amp; Tonic</span><span class="dots"></span><span class="price">RM 28</span></li>
+            <li class="menu-item"><span class="name">Happy Apple</span><span class="dots"></span><span class="price">RM 28</span></li>
+            <li class="menu-item"><span class="name">Cooper Vintage Ale</span><span class="dots"></span><span class="price">RM 24</span></li>
+            <li class="menu-item"><span class="name">Robust Porter</span><span class="dots"></span><span class="price">RM 34</span></li>
+            <li class="menu-item"><span class="name">Chaang<span class="desc">Thai beer</span></span><span class="dots"></span><span class="price">RM 18</span></li>
+            <li class="menu-item"><span class="name">Singha<span class="desc">Thai beer</span></span><span class="dots"></span><span class="price">RM 18</span></li>
+          </ul>
+          <p style="margin:20px 0 0;color:var(--muted);font-size:.9rem">Available all day. For guests of legal drinking age.</p>
+        </div>
+
+        <div class="menu-foot reveal">
+          <div class="addons">
+            <span>With ice <b>+RM 1</b></span>
+            <span>Oat milk <b>+RM 2</b></span>
+            <span>Extra shot <b>+RM 3</b></span>
+            <span>Ice cream <b>+RM 7</b></span>
+          </div>
+          <span class="pay"><svg class="icon"><use href="#i-wallet"/></svg>Cash or e-wallet (DuitNow QR)</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Favourites -->
+    <section id="favourites">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Crowd favourites</span>
+          <h2>What everyone orders.</h2>
+          <p>The drinks and desserts that come up again and again in reviews.</p>
+        </div>
+        <div class="fav-grid">
+          <article class="fav reveal">
+            <div class="fav-icon" style="background:#fde4e2;color:var(--red)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12l-1.5 17a2 2 0 0 1-2 2h-5a2 2 0 0 1-2-2z"/><path d="M6.5 9h11"/><circle cx="10" cy="14" r="1"/><circle cx="14" cy="17" r="1"/></svg>
+            </div>
+            <h3>Espresso Tonic</h3>
+            <p>A bright, fizzy shot of espresso over tonic and ice. Refreshing on a hot KL afternoon.</p>
+            <span class="price-tag">RM 17</span>
+          </article>
+          <article class="fav reveal">
+            <div class="fav-icon" style="background:#e6eedc;color:var(--matcha)">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h14v5a6 6 0 0 1-6 6h-2a6 6 0 0 1-6-6z"/><path d="M18 11h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c0 2 2 2 2 4M12 3c0 2 2 2 2 4"/></svg>
+            </div>
+            <h3>Matcha Hero</h3>
+            <p>A smooth matcha latte, or try it mixed with chocolate (Bape) or coffee (Nigel).</p>
+            <span class="price-tag">From RM 14</span>
+          </article>
+          <article class="fav reveal">
+            <div class="fav-icon" style="background:#fdf1cc;color:#9a6b00">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18h18L12 6z"/><path d="M3 18v2h18v-2"/><path d="M8 13h8"/></svg>
+            </div>
+            <h3>Cheesecake</h3>
+            <p>Creamy and not too sweet, in burnt, blueberry or matcha. Pairs with any drink.</p>
+            <span class="price-tag">From RM 17</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section id="about" style="padding-top:0">
+      <div class="wrap about-grid">
+        <div class="about-copy reveal">
+          <span class="eyebrow">About us</span>
+          <h2 style="margin:14px 0 22px">Retro, loud and friendly.</h2>
+          <p>Piu Piu Piu sits inside The Zhongshan Building, a creative hub on Jalan Rotan in Kampung Attap. The bar is small, with lucky cats on the shelves, rock and roll on the speakers and Japanese retro details everywhere.</p>
+          <p>Drop in between browsing the building's shops, sit outside with an iced coffee, and take a look at the t-shirt merch designed by a Japanese tattoo artist.</p>
+          <div class="facts">
+            <div class="fact"><strong>4.6★</strong><span>Google rating</span></div>
+            <div class="fact"><strong>202</strong><span>Reviews</span></div>
+            <div class="fact"><strong>RM 1–20</strong><span>Per person</span></div>
+          </div>
+        </div>
+        <div class="quotes">
+          <div class="quote reveal">
+            <span class="quote-tag">The vibe</span>
+            <p>Visitors describe a cool, vibey coffee bar that's small but full of character.</p>
+          </div>
+          <div class="quote reveal">
+            <span class="quote-tag">The people</span>
+            <p>The owner and team are often praised for being friendly and making people feel at home.</p>
+          </div>
+          <div class="quote reveal">
+            <span class="quote-tag">The cake</span>
+            <p>The cheesecake gets frequent mentions for being creamy without being overly sweet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Visit -->
+    <section class="visit" id="visit">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <span class="eyebrow">Visit</span>
+          <h2>Come say hi.</h2>
+          <p>Dine in, take away, or order for delivery.</p>
+        </div>
+        <div class="visit-grid">
+          <div class="visit-card reveal">
+            <div class="info-row">
+              <svg class="icon"><use href="#i-pin"/></svg>
+              <div><small>Address</small>80A, The Zhongshan Building, Jalan Rotan, Kampung Attap, 50460 Kuala Lumpur</div>
+            </div>
+            <div class="info-row">
+              <svg class="icon"><use href="#i-phone"/></svg>
+              <div><small>Phone</small><a href="tel:+60104063695">010-406 3695</a></div>
+            </div>
+            <div class="info-row" style="border-bottom:0">
+              <svg class="icon"><use href="#i-clock"/></svg>
+              <div style="flex:1">
+                <small>Opening hours</small>
+                <table class="hours" id="hours">
+                  <tr data-day="1" class="closed"><td>Monday</td><td>Closed</td></tr>
+                  <tr data-day="2"><td>Tuesday</td><td>12:30 – 6:30 pm</td></tr>
+                  <tr data-day="3"><td>Wednesday</td><td>12:30 – 6:30 pm</td></tr>
+                  <tr data-day="4"><td>Thursday</td><td>12:30 – 6:30 pm</td></tr>
+                  <tr data-day="5"><td>Friday</td><td>12:30 – 6:30 pm</td></tr>
+                  <tr data-day="6"><td>Saturday</td><td>12:30 – 6:30 pm</td></tr>
+                  <tr data-day="0"><td>Sunday</td><td>12:30 – 6:30 pm</td></tr>
+                </table>
+              </div>
+            </div>
+            <div class="visit-actions">
+              <a href="https://maps.app.goo.gl/GRrsw71YKCt5qZq59" target="_blank" rel="noopener" class="btn btn-primary">Open in Google Maps <svg class="icon"><use href="#i-arrow"/></svg></a>
+              <a href="https://wa.me/60104063695" target="_blank" rel="noopener" class="btn btn-ghost">
+                <svg class="icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.4.1-.7.3-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.1.2 1.8 2.8 4.4 3.9 1.6.7 2.3.8 3.1.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.6-.3z"/></svg>
+                Contact us
+              </a>
+            </div>
+          </div>
+          <div class="map reveal">
+            <iframe title="Map showing Piu Piu Piu Cafe in The Zhongshan Building, Kuala Lumpur" src="https://maps.google.com/maps?q=Piu%20Piu%20Piu%20Cafe%2C%20Zhongshan%20Building%2C%20Kuala%20Lumpur&amp;ll=3.1378163,101.6970385&amp;z=17&amp;output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="wrap foot-inner">
+      <a href="#top" class="logo" style="font-size:1rem">
+        <svg class="logo-mark" style="width:26px;height:26px" viewBox="0 0 34 34" aria-hidden="true">
+          <circle cx="17" cy="17" r="15.5" fill="#f4c542" stroke="#141414" stroke-width="2"/>
+          <path d="M12.5 13v3M21.5 13v3" stroke="#141414" stroke-width="2.4" stroke-linecap="round"/>
+          <path d="M10.5 20c1.8 3.4 4.2 5 6.5 5s4.7-1.6 6.5-5" stroke="#141414" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+        </svg>
+        PIU PIU PIU
+      </a>
+      <span>© <span id="year">2026</span> Piu Piu Piu Cafe · The Zhongshan Building, Kuala Lumpur</span>
+    </div>
+  </footer>
+
+  <script>
+    // Sticky nav border
+    const nav = document.getElementById('nav');
+    const onScroll = () => nav.classList.toggle('scrolled', window.scrollY > 8);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    // Mobile menu
+    const toggle = document.getElementById('menuToggle');
+    const links = document.getElementById('navLinks');
+    toggle.addEventListener('click', () => {
+      const open = links.classList.toggle('open');
+      toggle.setAttribute('aria-expanded', open);
+    });
+    links.querySelectorAll('a').forEach(a => a.addEventListener('click', () => {
+      links.classList.remove('open');
+      toggle.setAttribute('aria-expanded', 'false');
+    }));
+
+    // Menu tabs
+    const tabs = [...document.querySelectorAll('.tab')];
+    const select = (tab) => {
+      tabs.forEach(t => {
+        const on = t === tab;
+        t.setAttribute('aria-selected', on);
+        t.tabIndex = on ? 0 : -1;
+        document.getElementById(t.getAttribute('aria-controls')).hidden = !on;
+      });
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener('click', () => select(tab));
+      tab.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        select(next); next.focus();
+      });
+    });
+
+    // Open / closed status (Kuala Lumpur time, UTC+8)
+    const now = new Date(Date.now() + (new Date().getTimezoneOffset() + 480) * 60000);
+    const day = now.getDay();
+    const mins = now.getHours() * 60 + now.getMinutes();
+    const isOpen = day !== 1 && mins >= 750 && mins < 1110;
+    document.getElementById('statusDot').classList.toggle('open', isOpen);
+    document.getElementById('statusText').textContent = isOpen
+      ? 'Open now · until 6:30 pm'
+      : (day === 1 ? 'Closed today · opens Tue 12:30 pm' : (mins < 750 ? 'Opens today at 12:30 pm' : 'Closed · opens ' + (day === 0 ? 'Tue' : 'tomorrow') + ' 12:30 pm'));
+    const todayRow = document.querySelector(`#hours tr[data-day="${day}"]`);
+    if (todayRow) todayRow.classList.add('today');
+    document.getElementById('year').textContent = now.getFullYear();
+
+    // Reveal on scroll
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: .12 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+  </script>
+</body>
+</html>
